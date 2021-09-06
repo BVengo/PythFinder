@@ -3,7 +3,7 @@ from Color import Color
 
 class EndCell(Cell):
 
-	fill = Color.RED
+	fill = Color.PURPLE
 	border = Color.BLACK
 
 	def __init__(self, x, y, width, height):

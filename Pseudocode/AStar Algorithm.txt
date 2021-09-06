@@ -1,0 +1,21 @@
+OPEN
+CLOSED
+add the start node to OPEN
+
+loop
+  current = node in OPEN with lowest f_cost
+  remove current from OPEN
+  add current to CLOSED
+
+  if current is target node
+    return
+  
+  foreach neighbour of current node
+    if neighbour not traversable or neighbour in CLOSED
+      continue
+    
+    if new path to neighbour is shorter or neighbour not in OPEN
+      set f_cost of neighbour
+      set parent of neighbour to current
+      if neighbour not in OPEN
+        add neighbour to OPEN

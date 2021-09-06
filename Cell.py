@@ -1,6 +1,8 @@
 import pygame
 
 class Cell:
+	traversable = True
+
 	def __init__(self, x, y, width, height, fill, border):
 		self.x = x
 		self.y = y

@@ -10,8 +10,8 @@ class Grid:
 	fill = Color.WHITE
 	border = Color.BLACK
 
-	placedStart = False
-	placedEnd = False
+	startCell = None
+	endCell = None
 
 	def __init__(self, x, y, width, height, cols, rows):
 		self.x = x
@@ -48,8 +48,15 @@ class Grid:
 
 	def clear(self):
 		self.populate()
-		self.placedStart = False
-		self.placedEnd = False
+		self.startCell = None
+		self.endCell = None
+
+	def reset(self):
+		for col in range(0, self.cols):
+			for row in range(0, self.rows):
+				if type(self.cells[col][row]) == Cell:
+					self.cells[col][row].fill = self.fill
+					self.cells[col][row].updated = True
 
 
 	def draw(self, window):
@@ -79,10 +86,48 @@ class Grid:
 		return (cellX, cellY)
 
 
+	def getCell(self, gridPos):
+		return self.cells[gridPos[0]][gridPos[1]]
+
+
 	def contains(self, pos):
 		return (pos[0] >= self.x and pos[0] < (self.x + self.width) and 
 				pos[1] >= self.y and pos[1] < (self.y + self.height))
 	
+
+	def get_neighbours(self, cell):
+		gridPos = self.getGridPos((cell.x, cell.y))
+		neighbours = []
+
+		col = gridPos[0]
+		row = gridPos[1]
+
+		if col - 1 >= 0:
+			neighbours.append(self.cells[col - 1][row])
+
+			if row - 1 >= 0:
+				neighbours.append(self.cells[col - 1][row - 1])
+
+			if row + 1 < self.rows:
+				neighbours.append(self.cells[col - 1][row + 1])
+
+		if col + 1 < self.cols:
+			neighbours.append(self.cells[col + 1][row])
+
+			if row - 1 >= 0:
+				neighbours.append(self.cells[col + 1][row - 1])
+
+			if row + 1 < self.rows:
+				neighbours.append(self.cells[col + 1][row + 1])
+
+		if row - 1 >= 0:
+			neighbours.append(self.cells[col][row-1])
+
+		if row + 1 < self.rows:
+			neighbours.append(self.cells[col][row+1])
+		
+		return neighbours
+
 
 	def handle_lclick(self, pos):
 		if not self.contains(pos):
@@ -97,18 +142,18 @@ class Grid:
 			self.cells[gridPos[0]][gridPos[1]] = Barrier(cellPos[0], cellPos[1], self.cellWidth, self.cellHeight)
 
 			if currentCellType == StartCell:
-				if self.placedEnd:
+				if self.endCell != None:
 					endCellPos = self.getCellPosFromGrid(self.endPos)
 
 					self.cells[self.endPos[0]][self.endPos[1]] = Cell(endCellPos[0], endCellPos[1], self.cellWidth, self.cellHeight, self.fill, self.border)
-					self.placedEnd = False
+					self.endCell = None
 				
 				self.cells[gridPos[0]][gridPos[1]] = Barrier(cellPos[0], cellPos[1], self.cellWidth, self.cellHeight)
-				self.placedStart = False
+				self.startCell = None
 
 			if currentCellType == EndCell:
 				self.cells[gridPos[0]][gridPos[1]] = Barrier(cellPos[0], cellPos[1], self.cellWidth, self.cellHeight)
-				self.placedEnd = False
+				self.endCell = None
 		else:
 			self.cells[gridPos[0]][gridPos[1]] = Cell(cellPos[0], cellPos[1], self.cellWidth, self.cellHeight, self.fill, self.border)
 
@@ -123,25 +168,25 @@ class Grid:
 		currentCellType = type(self.cells[gridPos[0]][gridPos[1]])
 
 		if currentCellType != StartCell and currentCellType != EndCell:
-			if self.placedEnd:
+			if self.endCell != None:
 				pass
-			elif self.placedStart:
+			elif self.startCell != None:
 				self.cells[gridPos[0]][gridPos[1]] = EndCell(cellPos[0], cellPos[1], self.cellWidth, self.cellHeight)
 				self.endPos = gridPos
-				self.placedEnd = True
+				self.endCell = self.cells[gridPos[0]][gridPos[1]]
 			else:
 				self.cells[gridPos[0]][gridPos[1]] = StartCell(cellPos[0], cellPos[1], self.cellWidth, self.cellHeight)
 				self.startPos = gridPos
-				self.placedStart = True
+				self.startCell = self.cells[gridPos[0]][gridPos[1]]
 		elif currentCellType == StartCell:
-			if self.placedEnd:
+			if self.endCell != None:
 				endCellPos = self.getCellPosFromGrid(self.endPos)
 
 				self.cells[self.endPos[0]][self.endPos[1]] = Cell(endCellPos[0], endCellPos[1], self.cellWidth, self.cellHeight, self.fill, self.border)
-				self.placedEnd = False
+				self.endCell = None
 			
 			self.cells[gridPos[0]][gridPos[1]] = Cell(cellPos[0], cellPos[1], self.cellWidth, self.cellHeight, self.fill, self.border)
-			self.placedStart = False
+			self.startCell = None
 		elif currentCellType == EndCell:
 			self.cells[gridPos[0]][gridPos[1]] = Cell(cellPos[0], cellPos[1], self.cellWidth, self.cellHeight, self.fill, self.border)
-			self.placedEnd = False
+			self.endCell = None

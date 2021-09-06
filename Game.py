@@ -1,27 +1,11 @@
 import pygame
 from pygame.locals import *
 import sys
-from enum import Enum, auto
 from Grid import Grid
-from Barrier import Barrier
 from Color import Color
-
-
-
-class GameState(Enum):
-		# Can set game to auto or manual
-		# Can set barriers, start point, and end point
-		SETUP = auto()
-		
-		# Can set game to auto or setup
-		# Can hit restart
-		# Steps through process with button press
-		MANUAL = auto()
-
-		# Can set game to manual or setup
-		# Can hit restart
-		# Steps through process on its own
-		AUTO = auto()
+from AStarAlgorithm import AStarAlgorithm
+from StartCell import StartCell
+from EndCell import EndCell
 
 class Game:
 
@@ -34,8 +18,6 @@ class Game:
 		self.grid = Grid(0, 0, windowWidth, windowHeight, 20, 20)
 
 		pygame.display.flip()
-
-		self.state = GameState.SETUP
 
 
 	def run(self):
@@ -57,6 +39,9 @@ class Game:
 			elif event.type == pygame.KEYDOWN:
 				if event.key == K_ESCAPE:
 					self.grid.clear()
+				if event.key == K_SPACE:
+					self.grid.reset()
+					self.runPathFinder()						
 			elif event.type == pygame.QUIT:
 				pygame.quit()
 				sys.exit()
@@ -64,3 +49,22 @@ class Game:
 
 	def draw(self):
 		self.grid.draw(self.window)
+
+	
+	def runPathFinder(self):
+		if self.grid.startCell != None and self.grid.endCell != None:
+			algorithm = AStarAlgorithm(self.grid, self.grid.startCell, self.grid.endCell)
+			pathEnd = algorithm.find_path()
+
+			if pathEnd is None:
+				print('No path available between start and end nodes.')
+				return
+
+			pathNode = pathEnd
+
+			while pathNode != None:
+				if type(pathNode.cell) != StartCell and type(pathNode.cell) != EndCell:
+					pathNode.cell.fill = Color.YELLOW
+					pathNode.cell.updated = True
+
+				pathNode = pathNode.parent
