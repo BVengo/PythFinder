@@ -61,7 +61,7 @@ class AStarAlgorithm:
 
         if not available:
           continue
-        
+
         neighbourNode = None
 
         for openNode in openList:
